@@ -93,22 +93,22 @@ export class AppComponent {
     formData.append('file', this.selectedFile);
 
     // Ensure your Spring Boot app is running on 8080!
+    this.http;
     this.http
-      this.http
-        .post(`${environment.apiUrl}/api/v1/statements/analyze`, formData)
-        .subscribe({
-          next: (response) => {
-            this.analysisData = response;
-            this.processChartData(); // Format the JSON for Chart.js
-            this.isLoading = false;
-          },
-          error: (error) => {
-            console.error(error);
-            this.errorMessage =
-              'Failed to analyze the statement. Check the console.';
-            this.isLoading = false;
-          },
-        });
+      .post(`${environment.apiUrl}/api/v1/statements/analyze`, formData)
+      .subscribe({
+        next: (response) => {
+          this.analysisData = response;
+          this.processChartData(); // Format the JSON for Chart.js
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error(error);
+          this.errorMessage =
+            'Failed to analyze the statement. Check the console.';
+          this.isLoading = false;
+        },
+      });
   }
 
   // Process the raw JSON into Chart.js format
@@ -172,10 +172,10 @@ export class AppComponent {
 
     this.http
       .post(
-        'http://localhost:8080/api/v1/statements/export',
+        `${environment.apiUrl}/api/v1/statements/export`,
         this.analysisData,
         {
-          responseType: 'blob', // Crucial for downloading files!
+          responseType: 'blob',
         },
       )
       .subscribe((blob) => {
