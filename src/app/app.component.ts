@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common'; // Needed for basic Angular dire
 import { BaseChartDirective } from 'ng2-charts'; // The chart module
 import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -93,20 +94,21 @@ export class AppComponent {
 
     // Ensure your Spring Boot app is running on 8080!
     this.http
-      .post('http://localhost:8080/api/v1/statements/analyze', formData)
-      .subscribe({
-        next: (response) => {
-          this.analysisData = response;
-          this.processChartData(); // Format the JSON for Chart.js
-          this.isLoading = false;
-        },
-        error: (error) => {
-          console.error(error);
-          this.errorMessage =
-            'Failed to analyze the statement. Check the console.';
-          this.isLoading = false;
-        },
-      });
+      this.http
+        .post(`${environment.apiUrl}/api/v1/statements/analyze`, formData)
+        .subscribe({
+          next: (response) => {
+            this.analysisData = response;
+            this.processChartData(); // Format the JSON for Chart.js
+            this.isLoading = false;
+          },
+          error: (error) => {
+            console.error(error);
+            this.errorMessage =
+              'Failed to analyze the statement. Check the console.';
+            this.isLoading = false;
+          },
+        });
   }
 
   // Process the raw JSON into Chart.js format
