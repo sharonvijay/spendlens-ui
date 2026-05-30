@@ -1,0 +1,247 @@
+/* 1. Global Setup & Typography */
+:host {
+  /* Using standard system fonts but prioritizing the cleaner sans-serifs */
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, sans-serif;
+  background-color: #f8fafc; /* Very soft slate background */
+  color: #0f172a; /* Deep slate for primary text */
+  display: block;
+  min-height: 100vh;
+}
+
+.app-container {
+  max-width: 480px;
+  margin: 0 auto;
+  background-color: #f8fafc;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  /* Adds a subtle container shadow when viewed on a wide desktop screen */
+  box-shadow: 0 0 40px rgba(0,0,0,0.03); 
+}
+
+/* 2. Modern Native Header */
+.app-header {
+  /* Glassmorphism Effect */
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  
+  padding: 24px 20px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.brand-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  
+  /* Modern Gradient Text Logo */
+  background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.tagline-badge {
+  display: inline-block;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  align-self: flex-start;
+}
+
+.header-icon-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #334155; /* Sharp, dark slate color for the icon */
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.header-icon-btn:hover {
+  background: #e2e8f0;
+}
+
+.header-icon-btn:active {
+  transform: scale(0.92);
+  background: #cbd5e1;
+}
+
+/* 3. Universal Card Styling (The "Fintech" Look) */
+.upload-section, .dashboard-section {
+  padding: 20px;
+}
+
+.upload-card, .summary-card, .chart-card {
+  background: #ffffff;
+  border-radius: 24px; /* Softer, rounder corners */
+  padding: 24px;
+  /* Premium diffused shadow effect */
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+  border: 1px solid #f8fafc;
+  margin-bottom: 20px;
+}
+
+/* 4. Upload Area */
+.upload-card h2 {
+  font-size: 20px;
+  margin-top: 0;
+}
+
+.upload-card p {
+  color: #64748b;
+  font-size: 14px;
+}
+
+.file-input {
+  display: none;
+}
+
+.file-label {
+  display: block;
+  background-color: #f1f5f9;
+  color: #334155;
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin: 24px 0;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  border: 2px dashed #cbd5e1;
+  transition: all 0.2s ease;
+}
+
+.file-label:active {
+  background-color: #e2e8f0;
+}
+
+.file-name {
+  font-weight: 600;
+  color: #2563eb;
+}
+
+/* 5. Sleek Buttons */
+.primary-btn {
+  /* Modern blue gradient */
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  padding: 16px;
+  width: 100%;
+  font-size: 16px;
+  font-weight: 700;
+  margin-top: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  transition: transform 0.1s ease;
+}
+
+.primary-btn:active {
+  transform: scale(0.98);
+}
+
+.primary-btn:disabled {
+  background: #e2e8f0;
+  color: #94a3b8;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.secondary-btn {
+  background-color: #f1f5f9;
+  color: #0f172a;
+  border: none;
+  border-radius: 14px;
+  padding: 16px;
+  width: 100%;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  cursor: pointer;
+}
+
+.text-btn {
+  background: none;
+  border: none;
+  color: #64748b;
+  font-weight: 600;
+  width: 100%;
+  padding: 12px;
+  cursor: pointer;
+}
+
+/* 6. Dashboard Summaries */
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.summary-card {
+  margin-bottom: 0;
+  padding: 20px;
+}
+
+.summary-card h3 {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summary-card p {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+/* Subtle financial colors for the summary text */
+.summary-card.expense p { color: #ef4444; } /* Red for expenses */
+.summary-card.balance p { color: #10b981; } /* Green for balance */
+
+/* 7. Charts */
+.chart-card h3 {
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.chart-container {
+  position: relative;
+  height: 260px;
+  width: 100%;
+}
+
+.action-bar {
+  margin-top: 10px;
+  padding-bottom: 40px;
+}
