@@ -245,3 +245,40 @@
   margin-top: 10px;
   padding-bottom: 40px;
 }
+
+/* 8. Account Info Card */
+.account-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 16px 24px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f8fafc;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.account-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.account-detail.right-align {
+  text-align: right;
+}
+
+.account-detail .label {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.account-detail .value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+}
