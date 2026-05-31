@@ -52,6 +52,17 @@
   </section>
 
   <section class="dashboard-section" *ngIf="analysisData">
+    <div class="account-card">
+      <div class="account-detail">
+        <span class="label">Account Holder</span>
+        <span class="value">{{ analysisData.accountHolder || "Unknown" }}</span>
+      </div>
+      <div class="account-detail right-align">
+        <span class="label">Account Number</span>
+        <span class="value">{{ analysisData.accountNumber || "Unknown" }}</span>
+      </div>
+    </div>
+
     <div class="summary-grid">
       <div class="summary-card expense">
         <h3>Total Spent</h3>
