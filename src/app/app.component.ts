@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common'; // Needed for basic Angular directives like *ngIf
+import { FormsModule } from '@angular/forms';
 import { BaseChartDirective } from 'ng2-charts'; // The chart module
 import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
@@ -9,7 +10,7 @@ import { environment } from '../environments/environment';
 @Component({
   selector: 'app-root',
   standalone: true, // Make sure this is here!
-  imports: [CommonModule, BaseChartDirective], // Import the modules here
+  imports: [CommonModule, FormsModule, BaseChartDirective], // Import the modules here
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
 })
@@ -21,6 +22,20 @@ export class AppComponent {
   isLoading = false;
   analysisData: any = null;
   errorMessage: string = '';
+  aiInsightsVisible = false;
+  displayedAiInsights = '';
+  isRevealingInsights = false;
+  insightRevealTimer: ReturnType<typeof window.setInterval> | null = null;
+  isInsightLoading = false;
+  chatQuestion = '';
+  chatReply = '';
+  isChatLoading = false;
+  chatError = '';
+  quickQuestions = [
+    'Which week had the highest spend?',
+    'Did spending rise or fall over time?',
+    'How do weekday and weekend spends compare?',
+  ];
 
   // Chart Data Configurations
   categoryChartData!: ChartData<'doughnut'>;
@@ -88,6 +103,7 @@ export class AppComponent {
 
     this.isLoading = true;
     this.errorMessage = '';
+    this.resetAiInsights();
 
     const formData = new FormData();
     formData.append('file', this.selectedFile);
@@ -101,6 +117,9 @@ export class AppComponent {
           this.analysisData = response;
           this.processChartData(); // Format the JSON for Chart.js
           this.isLoading = false;
+          this.aiInsightsVisible = false;
+          this.displayedAiInsights = '';
+          this.analysisData.aiInsights = '';
         },
         error: (error) => {
           console.error(error);
@@ -109,6 +128,77 @@ export class AppComponent {
           this.isLoading = false;
         },
       });
+  }
+
+  revealAiInsights() {
+    if (this.isRevealingInsights || this.isInsightLoading) {
+      return;
+    }
+
+    if (!this.analysisData?.aiInsights) {
+      this.fetchAiInsights();
+      return;
+    }
+
+    this.aiInsightsVisible = true;
+    this.displayedAiInsights = '';
+    this.isRevealingInsights = true;
+
+    const fullText = String(this.analysisData.aiInsights);
+    let index = 0;
+
+    this.insightRevealTimer = window.setInterval(() => {
+      this.displayedAiInsights = fullText.slice(0, index + 1);
+      index += 1;
+
+      if (index >= fullText.length) {
+        this.stopInsightReveal();
+      }
+    }, 22);
+  }
+
+  fetchAiInsights() {
+    if (!this.analysisData || this.isInsightLoading) return;
+
+    this.isInsightLoading = true;
+    this.chatError = '';
+
+    this.http
+      .post<{ reply: string }>(
+        `${environment.apiUrl}/api/v1/statements/insights`,
+        this.analysisData,
+      )
+      .subscribe({
+        next: (response) => {
+          this.analysisData.aiInsights = response?.reply ?? '';
+          this.isInsightLoading = false;
+          this.revealAiInsights();
+        },
+        error: (error) => {
+          console.error(error);
+          this.chatError = 'Could not load AI insights right now.';
+          this.isInsightLoading = false;
+        },
+      });
+  }
+
+  resetAiInsights() {
+    this.aiInsightsVisible = false;
+    this.displayedAiInsights = '';
+    this.isRevealingInsights = false;
+
+    if (this.insightRevealTimer) {
+      window.clearInterval(this.insightRevealTimer);
+      this.insightRevealTimer = null;
+    }
+  }
+
+  stopInsightReveal() {
+    if (this.insightRevealTimer) {
+      window.clearInterval(this.insightRevealTimer);
+      this.insightRevealTimer = null;
+    }
+    this.isRevealingInsights = false;
   }
 
   // Process the raw JSON into Chart.js format
@@ -188,5 +278,126 @@ export class AppComponent {
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
       });
+  }
+
+  askQuickQuestion(question: string) {
+    this.chatQuestion = question;
+    this.submitChatQuestion(true);
+  }
+
+  submitChatQuestion(useFallback = false) {
+    if (!this.analysisData?.transactions?.length || !this.chatQuestion.trim()) {
+      return;
+    }
+
+    const normalizedQuestion = this.chatQuestion.trim().toLowerCase();
+    const fallbackReply = this.getLocalFallbackReply(normalizedQuestion);
+
+    if (useFallback && fallbackReply) {
+      this.chatError = '';
+      this.chatReply = '';
+      this.isChatLoading = true;
+
+      window.setTimeout(() => {
+        this.chatReply = fallbackReply;
+        this.isChatLoading = false;
+        this.chatQuestion = '';
+      }, 850);
+      return;
+    }
+
+    this.isChatLoading = true;
+    this.chatError = '';
+    this.chatReply = '';
+
+    const payload = {
+      question: this.chatQuestion.trim(),
+      transactions: this.analysisData.transactions,
+    };
+
+    this.http
+      .post<{ reply: string }>(
+        `${environment.apiUrl}/api/v1/statements/chat`,
+        payload,
+      )
+      .subscribe({
+        next: (response) => {
+          this.chatReply = response?.reply ?? 'No reply returned.';
+          this.isChatLoading = false;
+          this.chatQuestion = '';
+        },
+        error: (error) => {
+          console.error(error);
+          if (fallbackReply) {
+            window.setTimeout(() => {
+              this.chatReply = fallbackReply;
+              this.chatError = '';
+              this.isChatLoading = false;
+              this.chatQuestion = '';
+            }, 850);
+            return;
+          }
+          this.chatError = 'Could not fetch an AI answer right now.';
+          this.isChatLoading = false;
+        },
+      });
+  }
+
+  private getLocalFallbackReply(question: string): string | null {
+    const weeklyData = this.analysisData?.weeklyData ?? [];
+    if (!weeklyData.length) return null;
+
+    if (question === 'which week had the highest spend?') {
+      const topWeek = weeklyData.reduce((best: any, current: any) => {
+        const currentSpend = Number(current.totalWeekSpend || 0);
+        const bestSpend = Number(best.totalWeekSpend || 0);
+        return currentSpend > bestSpend ? current : best;
+      });
+
+      return `Week ${topWeek.weekNumber} had the highest spend at ₹${Number(
+        topWeek.totalWeekSpend || 0,
+      ).toFixed(2)}. That was the peak week in your statement.`;
+    }
+
+    if (question === 'how do weekday and weekend spends compare?') {
+      const weekdayTotal = weeklyData.reduce(
+        (sum: number, week: any) => sum + Number(week.weekdaySpend || 0),
+        0,
+      );
+      const weekendTotal = weeklyData.reduce(
+        (sum: number, week: any) => sum + Number(week.weekendSpend || 0),
+        0,
+      );
+      const diff = Math.abs(weekdayTotal - weekendTotal).toFixed(2);
+
+      return weekdayTotal >= weekendTotal
+        ? `Weekday spending is higher than weekend spending by about ₹${diff} across the statement period. Most of the activity happened during the workweek.`
+        : `Weekend spending is higher than weekday spending by about ₹${diff} across the statement period. Your pattern leans more toward weekend activity.`;
+    }
+
+    if (question === 'did spending rise or fall over time?') {
+      const spends = weeklyData.map((week: any) =>
+        Number(week.totalWeekSpend || 0),
+      );
+
+      if (spends.length < 2) {
+        return 'There are not enough weeks to judge the trend clearly.';
+      }
+
+      const first = spends[0];
+      const last = spends[spends.length - 1];
+      const maxBase = Math.max(first, last, 1);
+      const delta = last - first;
+
+      if (Math.abs(delta) < maxBase * 0.05) {
+        return 'Spending looks mostly flat across the period, with some week-to-week variation but no strong upward or downward trend.';
+      }
+
+      return delta > 0
+        ? 'Spending trends upward overall from the start to the end of the statement period.'
+        : 'Spending trends downward overall from the start to the end of the statement period.';
+    }
+
+    return null;
   }
 }

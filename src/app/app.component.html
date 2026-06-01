@@ -66,11 +66,135 @@
     <div class="summary-grid">
       <div class="summary-card expense">
         <h3>Total Spent</h3>
-        <p>₹{{ analysisData.totalExpenses | number: "1.2-2" }}</p>
+        <p>&#8377;{{ analysisData.totalExpenses | number: "1.2-2" }}</p>
       </div>
       <div class="summary-card balance">
         <h3>Closing Balance</h3>
-        <p>₹{{ analysisData.closingBalance | number: "1.2-2" }}</p>
+        <p>&#8377;{{ analysisData.closingBalance | number: "1.2-2" }}</p>
+      </div>
+    </div>
+
+    <div class="insight-shell">
+      <div class="insight-header">
+        <div>
+          <h3>AI Insights</h3>
+          <p>Reveal a short, model-generated summary from this statement.</p>
+        </div>
+        <button
+          class="ai-btn insight-btn"
+          type="button"
+          [disabled]="isRevealingInsights || isInsightLoading"
+          (click)="revealAiInsights()"
+        >
+          <svg
+            class="ai-btn-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M12 3v3"></path>
+            <path d="M12 18v3"></path>
+            <path d="M5 12H2"></path>
+            <path d="M22 12h-3"></path>
+            <path d="m6.3 6.3-2.1-2.1"></path>
+            <path d="m19.8 19.8-2.1-2.1"></path>
+            <path d="m6.3 17.7-2.1 2.1"></path>
+            <path d="m19.8 4.2-2.1 2.1"></path>
+            <circle cx="12" cy="12" r="3.5"></circle>
+          </svg>
+          <span *ngIf="!isInsightLoading && !isRevealingInsights">Get AI Insights</span>
+          <span *ngIf="isInsightLoading">Loading...</span>
+          <span *ngIf="isRevealingInsights">Revealing...</span>
+        </button>
+      </div>
+
+      <div class="insight-panel" *ngIf="aiInsightsVisible">
+        <p class="insight-text" [class.typing]="isRevealingInsights">
+          {{ displayedAiInsights }}
+          <span *ngIf="isRevealingInsights" class="cursor">|</span>
+        </p>
+      </div>
+    </div>
+
+    <div class="question-shell">
+      <div class="question-header">
+        <div>
+          <h3>Good first questions</h3>
+          <p>Start with weekly trends before drilling into categories.</p>
+        </div>
+      </div>
+
+      <div class="question-chips">
+        <button
+          class="question-chip"
+          type="button"
+          *ngFor="let question of quickQuestions"
+          (click)="askQuickQuestion(question)"
+        >
+          {{ question }}
+        </button>
+      </div>
+    </div>
+
+    <div class="chat-shell">
+      <div class="chat-header">
+        <div>
+          <h3>Ask About This Statement</h3>
+          <p>Use the loaded analysis data to ask a weekly or transaction question.</p>
+        </div>
+      </div>
+
+      <div class="chat-composer">
+        <input
+          type="text"
+          class="chat-input"
+          [(ngModel)]="chatQuestion"
+          placeholder="Ask about weekly spend, categories, or merchants"
+          [disabled]="isChatLoading"
+          (keyup.enter)="submitChatQuestion()"
+        />
+        <button
+          class="ai-btn chat-send-btn"
+          type="button"
+          [disabled]="!chatQuestion.trim() || isChatLoading"
+          (click)="submitChatQuestion()"
+        >
+          <svg
+            class="ai-btn-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M12 3v3"></path>
+            <path d="M12 18v3"></path>
+            <path d="M5 12H2"></path>
+            <path d="M22 12h-3"></path>
+            <path d="m6.3 6.3-2.1-2.1"></path>
+            <path d="m19.8 19.8-2.1-2.1"></path>
+            <path d="m6.3 17.7-2.1 2.1"></path>
+            <path d="m19.8 4.2-2.1 2.1"></path>
+            <circle cx="12" cy="12" r="3.5"></circle>
+          </svg>
+          <span *ngIf="!isChatLoading">Ask</span>
+          <span *ngIf="isChatLoading">Thinking...</span>
+        </button>
+      </div>
+
+      <p class="chat-error" *ngIf="chatError">{{ chatError }}</p>
+
+      <div class="chat-reply" *ngIf="chatReply">
+        <span class="chat-reply-label">AI Reply</span>
+        <p>{{ chatReply }}</p>
       </div>
     </div>
 
@@ -111,7 +235,7 @@
       </button>
       <button
         class="text-btn"
-        (click)="analysisData = null; selectedFile = null"
+        (click)="analysisData = null; selectedFile = null; resetAiInsights()"
       >
         Upload Another
       </button>
